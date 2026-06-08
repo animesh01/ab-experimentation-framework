@@ -1,0 +1,48 @@
+experiment_id: last_mile_delivery_chatbot_v1
+name: Last-mile delivery chatbot launch experiment
+owner: Animesh Chowdhury
+status: draft
+
+hypothesis: >
+  If customers with delivery-related questions are routed to the improved chatbot
+  experience, then containment and task completion will increase because the bot can
+  resolve last-mile delivery issues without agent handoff.
+
+audience:
+  include:
+    - customers_with_delivery_order
+    - delivery_related_chat_intent
+  exclude:
+    - internal_users
+    - users_without_tracking_consent
+    - high_risk_compliance_cases
+
+variants:
+  control:
+    allocation_pct: 50
+    description: Existing delivery support chatbot flow
+  treatment:
+    allocation_pct: 50
+    description: Improved last-mile delivery chatbot flow
+
+metrics:
+  primary:
+    name: successful_self_service_resolution_rate
+    definition: Customer resolves a delivery issue in chatbot without agent handoff or repeat contact within 24 hours.
+  guardrails:
+    - name: repeat_contact_rate_24h
+      threshold: treatment must not increase by more than 1 percentage point
+    - name: agent_escalation_complaint_rate
+      threshold: treatment must not increase by more than 0.5 percentage points
+    - name: unresolved_delivery_issue_rate
+      threshold: treatment must not increase by more than 0.5 percentage points
+
+runtime:
+  minimum_days: 7
+  target_power: 0.8
+  significance_level: 0.05
+
+decision_policy:
+  ship: Primary metric improves with p_value < 0.05 and guardrails remain within thresholds.
+  iterate: Directional lift with p_value >= 0.05 or segment-specific learning.
+  stop: No lift, harmful guardrail movement, or invalid instrumentation.
