@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import altair as alt
+# charts use Streamlit's built-in charting (no altair dependency)
 import pandas as pd
 import streamlit as st
 
@@ -322,26 +322,7 @@ def calculate(control_users: int, control_conversions: int, treatment_users: int
     }
 
 
-@alt.theme.register("experiment_lab", enable=True)
-def chart_theme() -> alt.theme.ThemeConfig:
-    return alt.theme.ThemeConfig({
-        "config": {
-            "view": {"stroke": "transparent"},
-            "axis": {
-                "domain": False,
-                "gridColor": "#e7ece9",
-                "labelColor": COLORS["muted"],
-                "titleColor": COLORS["muted"],
-                "tickColor": "transparent",
-            },
-            "legend": {
-                "labelColor": COLORS["muted"],
-                "titleColor": COLORS["ink"],
-                "orient": "top",
-            },
-            "title": {"color": COLORS["ink"], "font": "Manrope", "fontSize": 16},
-        }
-    })
+CHART_COLORS = [COLORS["blue"], COLORS["teal"]]
 
 
 inject_styles()
@@ -447,28 +428,14 @@ with overview_tab:
             "Users": [control.users, treatment.users],
         }
     )
-    bar = (
-        alt.Chart(performance)
-        .mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8, size=78)
-        .encode(
-            x=alt.X("Variant:N", axis=alt.Axis(labelAngle=0, title=None)),
-            y=alt.Y("Rate:Q", axis=alt.Axis(format=".0%"), scale=alt.Scale(domain=[0, max(performance["Rate"]) * 1.25])),
-            color=alt.Color(
-                "Variant:N",
-                scale=alt.Scale(domain=["Control", "Treatment"], range=[COLORS["blue"], COLORS["teal"]]),
-                legend=None,
-            ),
-            tooltip=["Variant:N", alt.Tooltip("Rate:Q", format=".2%"), "Users:Q"],
-        )
-        .properties(height=330)
-    )
-    labels = bar.mark_text(dy=-14, font="Manrope", fontSize=16, fontWeight=700).encode(
-        text=alt.Text("Rate:Q", format=".1%")
-    )
+    bar_data = performance.set_index("Variant")[["Rate"]]
 
     chart_col, readout_col = st.columns([1.45, 1], gap="large")
     with chart_col:
-        st.altair_chart(bar + labels, width="stretch")
+        st.bar_chart(bar_data, y="Rate", color=COLORS["teal"], height=330)
+        st.caption(
+            f"Control {control.rate:.1%}  ·  Treatment {treatment.rate:.1%}"
+        )
     with readout_col:
         st.markdown(
             f"""
@@ -506,22 +473,10 @@ with overview_tab:
             ],
         }
     )
-    line = (
-        alt.Chart(trend)
-        .mark_line(point=alt.OverlayMarkDef(size=70, filled=True), strokeWidth=3)
-        .encode(
-            x=alt.X("Day:O", title="Experiment day"),
-            y=alt.Y("Rate:Q", axis=alt.Axis(format=".0%"), scale=alt.Scale(zero=False)),
-            color=alt.Color(
-                "Variant:N",
-                scale=alt.Scale(domain=["Control", "Treatment"], range=[COLORS["blue"], COLORS["teal"]]),
-                title=None,
-            ),
-            tooltip=["Day:O", "Variant:N", alt.Tooltip("Rate:Q", format=".2%")],
-        )
-        .properties(height=300)
-    )
-    st.altair_chart(line, width="stretch")
+    trend_wide = trend.pivot(index="Day", columns="Variant", values="Rate")[
+        ["Control", "Treatment"]
+    ]
+    st.line_chart(trend_wide, color=[COLORS["blue"], COLORS["teal"]], height=300)
 
     st.markdown('<div class="section-title">What the data says</div>', unsafe_allow_html=True)
     insight_columns = st.columns(3)
@@ -630,23 +585,13 @@ with guardrails_tab:
     display_guardrails.loc[3, "Treatment"] = f"{guardrails.loc[3, 'Treatment']:.1f} sec"
     st.dataframe(display_guardrails, hide_index=True, width="stretch")
 
-    guardrail_chart = (
-        alt.Chart(guardrails.iloc[:3].melt("Metric", ["Control", "Treatment"], var_name="Variant", value_name="Rate"))
-        .mark_bar(cornerRadiusEnd=5)
-        .encode(
-            y=alt.Y("Metric:N", sort=None, title=None),
-            x=alt.X("Rate:Q", axis=alt.Axis(format=".0%")),
-            color=alt.Color(
-                "Variant:N",
-                scale=alt.Scale(domain=["Control", "Treatment"], range=[COLORS["blue"], COLORS["teal"]]),
-                title=None,
-            ),
-            yOffset="Variant:N",
-            tooltip=["Metric:N", "Variant:N", alt.Tooltip("Rate:Q", format=".2%")],
-        )
-        .properties(height=280)
+    guardrail_wide = guardrails.iloc[:3].set_index("Metric")[["Control", "Treatment"]]
+    st.bar_chart(
+        guardrail_wide,
+        color=[COLORS["blue"], COLORS["teal"]],
+        horizontal=True,
+        height=280,
     )
-    st.altair_chart(guardrail_chart, width="stretch")
     st.success("4 of 4 guardrails are within the launch thresholds.")
 
 with decision_tab:
