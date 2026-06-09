@@ -264,8 +264,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-overview_tab, setup_tab, guardrails_tab, decision_tab = st.tabs(
-    ["📈 What happened", "🧪 What we tested", "🛡️ Did it hurt anything", "🧭 What to do"]
+setup_tab, overview_tab, guardrails_tab, decision_tab = st.tabs(
+    ["🧪 What we tested", "📈 What happened", "🛡️ Did it hurt anything", "🧭 What to do"]
 )
 
 # ===================== WHAT WE TESTED (hypothesis + control/treatment) ===== #
