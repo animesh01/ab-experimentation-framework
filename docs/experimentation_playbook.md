@@ -1,5 +1,7 @@
 # Experimentation Playbook
 
+> _All examples and data in this repository are fabricated for demonstration. Nothing here is derived from any employer, customer, or production system._
+
 ## 1. Intake
 
 Use this checklist before a test is approved:

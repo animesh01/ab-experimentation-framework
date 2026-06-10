@@ -1,5 +1,7 @@
 # Instrumentation Spec
 
+> _All examples and data in this repository are fabricated for demonstration. Nothing here is derived from any employer, customer, or production system._
+
 ## Required Events
 
 ### `experiment_exposed`
@@ -31,7 +33,7 @@ Required properties:
 
 ## Example Events
 
-For a last-mile delivery chatbot launch experiment:
+For a delivery-estimate chatbot launch experiment:
 
 - `experiment_exposed`
 - `delivery_intent_detected`

@@ -38,7 +38,7 @@ st.set_page_config(page_title="A/B Experiment Report", page_icon="📊",
 # Each use case: plain hypothesis + what control/treatment actually are.
 # --------------------------------------------------------------------------- #
 USE_CASES = {
-    "Last-mile delivery chatbot": {
+    "Delivery-estimate chatbot": {
         "goal_metric": "placed an order",
         "hypothesis": "If the delivery chatbot proactively shows the customer a live delivery "
         "estimate before they ask, more of them will feel confident enough to complete their order.",
